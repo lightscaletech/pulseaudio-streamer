@@ -1,24 +1,35 @@
 import urllib
 import re
-from xml.etree import ElementTree
+import xmltodict
+
+class Service(object):
+    def __init__(self, data):
+        self.service_type = data['serviceType']
+        self.service_id = data['serviceId']
+        self.scpd_url = data['SCPDURL']
+        self.control_url = data['controlURL']
+        self.event_url = data['eventSubURL']
 
 class Device(object):
     def __init__(self, data):
-        tree = ElementTree.ElementTree(ElementTree.fromstring(data))
-        self.doc = tree.getroot()
-        self.ns = {'ns': self.get_xml_namespace()}
-        print(self.xpath_get_first("./ns:friendlyName"))
+        doc = xmltodict.parse(data)
+        device = doc['root']['device']
+        service = device['serviceList']['service']
 
-    def get_xml_namespace(self):
-        m = re.match('\{(.*)\}', self.doc.tag)
-        return m.group(1) if m else ''
+        self.friendly_name = device['friendlyName']
+        self.manufacturer = device['manufacturer']
+        self.model_name = device['modelName']
+        self.model_description = device['modelDescription']
+        self.services = []
 
-    def xpath_get_first(self, path):
-        res = self.doc.findall(path, namespaces=self.ns)
-        if(len(res) > 0):
-            res[0].text
-        else:
-            ''
+        if(type(service) is list):
+            for s in service: self.services.append(Service(s))
+        else: self.services.append(Service(service))
+
+    def has_service(self, type):
+        for s in self.services:
+            if(s.service_type == type): return True
+        return False
 
 def get_device(res):
     url = res.location
@@ -27,7 +38,11 @@ def get_device(res):
 
 def get_devices(resources):
     result = []
-    for r in resources:
-        result.append(get_device(r))
+    for r in resources: result.append(get_device(r))
+    return result
 
+def filter_devices_by_service_type(devices, type):
+    result = []
+    for d in devices:
+        if(d.has_service(type)): result.append(d)
     return result
