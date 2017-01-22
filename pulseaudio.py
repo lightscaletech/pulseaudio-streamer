@@ -29,8 +29,7 @@ def remove_sink(mod, from_list = True):
     command = cmd + ld + str(mod['id'])
     p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     out, err = p.communicate(None)
-    if from_list:
-        mods.remove(mod)
+    if from_list: mods.remove(mod)
 
 def remove_sink_by_id(sid):
     for m in mods:
