@@ -7,7 +7,7 @@ cmd = "/usr/bin/pactl "
 mods = []
 
 def make_name(desc):
-    return desc.replace(' ', '_').lower()
+    return re.sub(r'([^\_\w])+', '', desc)
 
 def create_sink(dev):
     desc = dev.friendly_name
