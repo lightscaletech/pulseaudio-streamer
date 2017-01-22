@@ -1,26 +1,70 @@
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+import logging
+import socket
+import threading
 
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        print("get request")
-        f = open("/home/sam/Music/Mailman/No News Is Good News/01 Dream About Love.mp3", 'rb')
-        data = f.read()
-        length = len(data)
-        self.send_response(200)
-        self.send_header('Content-Type', 'audio/mpeg')
-        self.send_header('Content-Length', length)
-        self.end_headers()
-        self.wfile.write(data)
-        return
+port_inc = 0
 
 class Server:
-    PORT = 8804
+    START_PORT = 8804
+
+    def __init__(self, encoder):
+        self.encoder = encoder
+        self.ip = socket.gethostbyname(socket.getfqdn())
+        self.stop_streaming = threading.Event()
+        global port_inc
+        self.port = self.START_PORT + port_inc
+        port_inc += 1
 
     def start(self):
-        self.server = HTTPServer(('', self.PORT), Handler)
+        self.stop_streaming.clear()
+        self.encoder.start()
+        self.thread = threading.Thread(target=self.serv)
+        self.thread.start()
+
+    def close_sock(self, sock):
+        logging.debug("closing socket")
+        sock.shutdown(socket.SHUT_RDWR)
+        sock.close()
+
+
+    def serv(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+        sock.bind(('', self.port))
+
+        sock.listen(1)
+        logging.debug('Socket listening on port: %i' % self.port)
+
+        try:
+
+            conn, addr = sock.accept()
+            logging.debug('Stream requested')
+
+            request = conn.recv(1024)
+
+            header = ('HTTP/1.1 200 OK\r\n' +
+                      'Content-Type: audio/mp3\r\n' +
+                      ('Content-Length: %i\r\n' % (1024 * 1024 * 100)) +
+                      'Connection: Keep-Alive' +
+                      '\r\n')
+
+            while True:
+                if self.stop_streaming.wait(0): break
+                out = self.encoder.read()
+                conn.send(header + out)
+                header = ''
+
+            conn.shutdown(socket.SHUT_RDWR)
+            conn.close()
+            self.close_sock(sock)
+
+        except:
+            logging.debug('Socket timeout')
+            self.close_sock(sock)
 
     def stop(self):
-        self.server.server_close()
-
-    def wait(self):
-        self.server.serve_forever()
+        self.stop_streaming.set()
+        self.thread.join()
+        self.encoder.stop()

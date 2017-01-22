@@ -47,7 +47,10 @@ def get_device(res):
 
 def get_devices(resources):
     result = []
-    for r in resources: result.append(get_device(r))
+    for r in resources:
+        try:
+            result.append(get_device(r))
+        except: None
     return result
 
 def filter_devices_by_service_type(devices, type):

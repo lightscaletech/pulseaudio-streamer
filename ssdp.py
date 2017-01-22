@@ -22,6 +22,7 @@ class SSDP:
         self.responses.append(SSDP_Response(sock.recv(2048)))
 
     def scan(self):
+        self.responses = []
         socket.setdefaulttimeout(3)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM,
                              socket.IPPROTO_UDP)

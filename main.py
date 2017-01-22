@@ -1,24 +1,44 @@
-import device
 from ssdp import SSDP
 from connectionmanager import ConnectionManager
 from avtransport import AVTransport
-from server import Server
-
-server = Server()
-server.start()
+import logging
+import device
+import pulseaudio
+import time
+import fifowatcher
+from threading import Event
 
 s = SSDP()
-s.scan()
-devices = device.get_devices(s.responses)
-devices = device.filter_devices_by_service_type(devices, AVTransport.SERVICE)
-devices = device.filter_devices_by_service_type(devices, ConnectionManager.SERVICE)
+stop_running = Event()
 
-dev = None
-for d in devices:
-    if(d.friendly_name == "HiFiPI"): dev = d
 
-tran = AVTransport(dev)
-conn = ConnectionManager(dev)
-print(conn.get_protocol_info().body()['s:Envelope']['s:Body'])
-#print(tran.set_transport_url("http://192.168.1.104/"))
-server.wait()
+def find_devices():
+    logging.debug("Searching for devices...")
+    s.scan()
+    devices = device.get_devices(s.responses)
+    devices = device.filter_devices_by_service_type(devices, AVTransport.SERVICE)
+    devices = device.filter_devices_by_service_type(devices, ConnectionManager.SERVICE)
+    return devices
+
+def cleanup():
+    pulseaudio.cleanup()
+    #fifowatcher.cleanup()
+    stop_running.set()
+
+def main():
+    stop_running.clear()
+    logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
+                        datefmt='%I:%M:%S',
+                        level=logging.DEBUG)
+    logging.info("Starting device discovery")
+    try:
+        while True:
+            devices = find_devices()
+            pulseaudio.manage_sinks(devices)
+            fifowatcher.setup_watches(stop_running, pulseaudio.mods)
+            if stop_running.wait(5): break
+    except KeyboardInterrupt: cleanup()
+    except: raise
+
+
+main()

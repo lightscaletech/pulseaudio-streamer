@@ -49,6 +49,12 @@ class ControlResponse:
     def  __init__(self, data):
         self.raw_response = data
 
+    def response_raw(self):
+        data = ''
+        for l in self.raw_response:
+            data += l
+        return data
+
     def headers_raw(self):
         if self.raw_headers == None:
             self.raw_headers = ''
@@ -84,7 +90,7 @@ class ControlResponse:
         return self.xml_body
 
 
-def send_request(req):
+def send_request(req, just_send=False):
     mes = req.get_xml().encode("utf-8")
     headers = req.headers
     headers.update({'Content-Length': len(mes)})
@@ -92,12 +98,13 @@ def send_request(req):
     sock = socket.socket()
     sock.connect(req.get_host_port())
     sock.send('POST %s HTTP/1.1\r\n' % req.service_path)
-    for h, v in headers.items():
-        sock.send('%s: %s\r\n' % (h, v))
+    for h, v in headers.items(): sock.send('%s: %s\r\n' % (h, v))
     sock.send('\r\n')
     sock.send(mes)
 
+    if just_send: return sock.close()
+
     data = []
     for l in sock.makefile(): data.append(l)
-
+    sock.close()
     return ControlResponse(data)
