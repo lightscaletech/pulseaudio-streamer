@@ -4,7 +4,7 @@ Detects UPnP media renderers to stream audio to
 ## About
 A small python application that scans the network for UPnP device. It
 creates a pulseaudio null sink for each. This allows you select it as an
-output devices for each application in puvucontrol. When a sync becomes active
+output devices for each application in puvucontrol. When a sink becomes active
 the monitor for it gets encoded and streamed over the network to the UPnP
 device.  
   
