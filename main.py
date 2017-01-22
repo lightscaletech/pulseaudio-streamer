@@ -6,11 +6,12 @@ import device
 import pulseaudio
 import time
 import fifowatcher
+import socket
+import errno
 from threading import Event
 
 s = SSDP()
 stop_running = Event()
-
 
 def find_devices():
     logging.debug("Searching for devices...")
@@ -21,6 +22,7 @@ def find_devices():
     return devices
 
 def cleanup():
+    logging.debug('Cleaning up')
     pulseaudio.cleanup()
     #fifowatcher.cleanup()
     stop_running.set()
@@ -38,7 +40,12 @@ def main():
             fifowatcher.setup_watches(stop_running, pulseaudio.mods)
             if stop_running.wait(5): break
     except KeyboardInterrupt: cleanup()
-    except: raise
-
+    except socket.error as err:
+        print (err.errno)
+        cleanup()
+        raise
+    except:
+        cleanup()
+        raise
 
 main()
