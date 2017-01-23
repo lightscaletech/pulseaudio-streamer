@@ -11,14 +11,15 @@ class Server:
         self.encoder = encoder
         self.ip = socket.gethostbyname(socket.getfqdn())
         self.stop_streaming = threading.Event()
+        self.thread = None
         global port_inc
         self.port = self.START_PORT + port_inc
         port_inc += 1
 
     def start(self):
+        self.thread = threading.Thread(target=self.serv)
         self.stop_streaming.clear()
         self.encoder.start()
-        self.thread = threading.Thread(target=self.serv)
         self.thread.start()
 
     def close_sock(self, sock):
@@ -66,5 +67,7 @@ class Server:
 
     def stop(self):
         self.stop_streaming.set()
-        self.thread.join()
+
+        if self.thread != None and type(self.thread) is threading.Thread:
+            self.thread.join()
         self.encoder.stop()
