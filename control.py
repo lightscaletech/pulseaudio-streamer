@@ -1,10 +1,11 @@
+import os
 from xml.dom import minidom
 import socket
 import re
 import xmltodict
 
 class ControlRequest:
-    FILE = "upnp/control.xml"
+    FILE = os.path.join(os.path.dirname(__file__), "upnp/control.xml")
     def __init__(self, device, service):
         self.dom = minidom.parse(self.FILE)
         self.base_url = device.url_base
