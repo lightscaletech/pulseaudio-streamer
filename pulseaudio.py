@@ -78,6 +78,10 @@ def manage_sinks(devices):
     old_devices(devices)
     new_devices(devices)
 
+class NotFound(Exception):
+    def __init__(self):
+        self.value = "Sink not found"
+
 class SinkWatcher:
     STATE_RUNNING = 'RUNNING'
     STATE_STOPPED = 'IDLE'
