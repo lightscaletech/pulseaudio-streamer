@@ -39,7 +39,6 @@ class Server:
         logging.debug('Socket listening on port: %i' % self.port)
 
         try:
-
             conn, addr = sock.accept()
             logging.debug('Stream requested')
 
