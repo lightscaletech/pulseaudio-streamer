@@ -51,7 +51,7 @@ class Encoder:
 
     def stop(self):
         logging.debug("Stopping encoding")
-        self.enc_proc.kill()
+        self.enc_proc.terminate()
         self.enc_fd.close()
         os.remove(self.enc_out)
 
