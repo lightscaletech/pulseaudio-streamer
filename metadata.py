@@ -1,3 +1,4 @@
+import os
 from xml.dom import minidom
 import cgi
 
@@ -22,7 +23,7 @@ class UpnpContentFlags(object):
             return (str(sum(self.flags)).zfill(8) + ('0' * 24))
 
 class MetaData(object):
-    FILE = "upnp/url_meta_data.xml"
+    FILE = os.path.join(os.path.dirname(__file__), "upnp/url_meta_data.xml")
     CONTENT_FLAGS = str(UpnpContentFlags([
         UpnpContentFlags.STREAMING_TRANSFER_MODE_SUPPORTED,
         UpnpContentFlags.BACKGROUND_TRANSFER_MODE_SUPPORTED,
