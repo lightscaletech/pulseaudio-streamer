@@ -94,17 +94,23 @@ class SinkWatcher:
         self.stopped = threading.Event()
         self.thread = threading.Thread(target=self.watch)
         self.thread.start()
+        self.exception = None
 
-    def wait_till_play(self): return self.started.wait()
-    def wait_till_stop(self): return self.stopped.wait()
+    def wait_till_play(self):
+        self.started.wait()
+        if self.exception: raise self.exception
+
+    def wait_till_stop(self):
+        self.stopped.wait()
+        if self.exception: raise self.exception
 
     def release(self):
         self.started.set()
         self.stopped.set()
+        self.stop_watcher.set()
 
     def stop(self):
         self.release()
-        self.stop_watcher.set()
         self.thread.join()
 
     def set_started(self):
@@ -128,15 +134,24 @@ class SinkWatcher:
             if sp[1] == self.mod['name']:
                 res = {'id': int(sp[0]), 'name': sp[1], 'module': sp[2],
                        'format':sp[3], 'state': sp[4]}
-        return res
+                return res
+
+        return NotFound()
+
 
     def watch(self):
         while True:
             sink = self.get_state()
-            try:
-                if sink['state'] == self.STATE_RUNNING: self.set_started()
-                if sink['state'] == self.STATE_STOPPED: self.set_stopped()
-            except: self.release()
+            if type(sink) is NotFound:
+                self.exception = sink
+                self.release()
+            else:
+                try:
+                    if sink['state'] == self.STATE_RUNNING: self.set_started()
+                    if sink['state'] == self.STATE_STOPPED: self.set_stopped()
+                except:
+                    self.exception = NotFound()
+                    self.release()
 
             if self.app_stop.wait(0): return self.release()
             if self.stop_watcher.wait(1): return
