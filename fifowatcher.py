@@ -40,22 +40,26 @@ class Watch:
 
     def watch(self):
         logging.debug('Started watching: %s' % self.mod['name'])
-        while True:
 
-            logging.debug('Waiting for playback')
-            self.sinkwatch.wait_till_play()
+        try:
+            while True:
+                logging.debug('Waiting for playback')
+                self.sinkwatch.wait_till_play()
 
-            self.start_playback()
+                self.start_playback()
 
-            logging.debug('Waiting till stop')
-            self.sinkwatch.wait_till_stop()
+                logging.debug('Waiting till stop')
+                self.sinkwatch.wait_till_stop()
 
-            self.stop_playback()
-            logging.debug('Playback stopped')
+                self.stop_playback()
+                logging.debug('Playback stopped')
 
-            if self.stop_running.wait(1): break
+                if self.stop_running.wait(1): break
 
-        self.sinkwatch.stop()
+            self.sinkwatch.stop()
+        except pulseaudio.NotFound:
+            logging.debug("Sink no longer exists")
+            self.server.stop()
 
 def setup_watches(stop_running, mods):
     for m in mods:
