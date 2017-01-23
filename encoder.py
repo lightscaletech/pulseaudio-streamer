@@ -17,6 +17,8 @@ class Encoder:
         out_rate = '320k'
 
         self.enc_out = '/tmp/%s.out' % m['name']
+        self.enc_fd = None
+        self.enc_proc = None
 
         prec_com = ('parec --format=%s --rate=%i -d %s | ' %
                     (in_format, in_rate, in_dev))
@@ -51,9 +53,20 @@ class Encoder:
 
     def stop(self):
         logging.debug("Stopping encoding")
-        self.enc_proc.terminate()
-        self.enc_fd.close()
-        os.remove(self.enc_out)
+        if self.enc_proc:
+            self.enc_proc.terminate()
+            self.enc_proc = False
+        if self.enc_fd:
+            self.enc_fd.close()
+            self.enc_fd = None
+        try:
+            os.remove(self.enc_out)
+        except os.error as err:
+            if err.errno == errno.ENOENT: pass
+            else: raise
+
+
+
 
     def read(self):
         return self.enc_fd.read(1024 * 8)
