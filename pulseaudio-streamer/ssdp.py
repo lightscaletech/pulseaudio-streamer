@@ -47,3 +47,13 @@ class SSDP_Response(object):
         self.location = res.getheader('LOCATION')
         self.usn = res.getheader('USN')
         self.st = res.getheader('ST')
+
+s = SSDP()
+
+def find_devices():
+    logging.debug("Searching for devices...")
+    s.scan()
+    devices = device.get_devices(s.responses)
+    devices = device.filter_devices_by_service_type(devices, AVTransport.SERVICE)
+    devices = device.filter_devices_by_service_type(devices, ConnectionManager.SERVICE)
+    return devices

@@ -1,25 +1,17 @@
-from ssdp import SSDP
-from connectionmanager import ConnectionManager
-from avtransport import AVTransport
 import logging
 import device
-import pulseaudio
 import time
-import fifowatcher
 import socket
 import errno
 from threading import Event
 
-s = SSDP()
-stop_running = Event()
+import ssdp
+from connectionmanager import ConnectionManager
+from avtransport import AVTransport
+import fifowatcher
+import pulseaudio
 
-def find_devices():
-    logging.debug("Searching for devices...")
-    s.scan()
-    devices = device.get_devices(s.responses)
-    devices = device.filter_devices_by_service_type(devices, AVTransport.SERVICE)
-    devices = device.filter_devices_by_service_type(devices, ConnectionManager.SERVICE)
-    return devices
+stop_running = Event()
 
 def cleanup():
     logging.debug('Cleaning up')
@@ -35,7 +27,7 @@ def main():
     logging.info("Starting device discovery")
     try:
         while True:
-            devices = find_devices()
+            devices = audio.find_devices()
             pulseaudio.manage_sinks(devices)
             fifowatcher.setup_watches(stop_running, pulseaudio.mods)
             if stop_running.wait(5): break
