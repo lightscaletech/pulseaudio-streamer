@@ -56,17 +56,26 @@ class Server:
                 conn.send(header + out)
                 header = ''
 
+            logging.debug('Streaming stopped')
             conn.shutdown(socket.SHUT_RDWR)
             conn.close()
             self.close_sock(sock)
 
-        except:
+        except socket.timeout:
             logging.debug('Socket timeout')
             self.close_sock(sock)
+        except:
+            logging.debug('Closing socket')
+            self.close_sock(sock)
+            raise
+
 
     def stop(self):
+        logging.debug('Stopping streaming')
         self.stop_streaming.set()
-
-        if self.thread != None and type(self.thread) is threading.Thread:
-            self.thread.join()
         self.encoder.stop()
+
+        if self.thread != None and self.thread.isAlive():
+            logging.debug('\t- Joining server thread')
+            self.thread.join()
+            self.thread = None
