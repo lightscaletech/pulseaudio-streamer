@@ -61,6 +61,7 @@ class Watch:
         except pulseaudio.NotFound:
             logging.debug("Sink no longer exists")
             self.server.stop()
+        except: raise
 
 def setup_watches(stop_running, mods):
     for m in mods:
