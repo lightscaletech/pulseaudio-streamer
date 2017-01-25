@@ -27,7 +27,7 @@ def main():
     logging.info("Starting device discovery")
     try:
         while True:
-            devices = audio.find_devices()
+            devices = ssdp.find_devices()
             pulseaudio.manage_sinks(devices)
             fifowatcher.setup_watches(stop_running, pulseaudio.mods)
             if stop_running.wait(5): break
