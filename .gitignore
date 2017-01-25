@@ -1,1 +1,4 @@
 *.pyc
+build
+dist
+pulseaudio_streamer.egg-info/
