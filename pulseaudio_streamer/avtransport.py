@@ -1,4 +1,4 @@
-from pulseaudio import control
+import control
 import metadata
 
 class AVTransport:
