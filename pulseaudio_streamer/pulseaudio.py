@@ -122,8 +122,8 @@ class SinkWatcher:
         self.stopped.set()
 
     def get_state(self):
-        com = 'pactl list sinks short'
-        proc = subprocess.Popen(com, shell=True,
+        com = ['/usr/bin/pactl', 'list', 'sinks', 'short']
+        proc = subprocess.Popen(com,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
         out, err = proc.communicate()
@@ -137,7 +137,6 @@ class SinkWatcher:
                 return res
 
         return NotFound()
-
 
     def watch(self):
         while True:
