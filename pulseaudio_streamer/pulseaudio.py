@@ -140,7 +140,10 @@ class SinkWatcher:
 
     def watch(self):
         while True:
-            sink = self.get_state()
+            try:
+                sink = self.get_state()
+            except:
+                logging.debug('Error getting state of sink')
             if type(sink) is NotFound:
                 self.exception = sink
                 self.release()
