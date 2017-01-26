@@ -3,7 +3,7 @@ import subprocess
 import errno
 import logging
 import time
-from select import select
+import select
 import time
 import threading
 
@@ -27,6 +27,7 @@ class Encoder:
 
         self.enc_fd_out = None
         self.enc_fd_in = None
+        self.polling = None
 
         self.enc_proc = None
         self.rec_proc = None
@@ -76,6 +77,8 @@ class Encoder:
         self.rec_proc = subprocess.Popen(self.prec_com,
                                          stderr=self.devnull,
                                          stdout=self.stream_fd_in)
+        self.polling = select.epoll(1)
+        self.polling.register(self.enc_fd_out, select.EPOLLIN)
 
     @staticmethod
     def stop_proc(proc):
@@ -103,6 +106,10 @@ class Encoder:
         self.stream_fd_in = self.close_fd(self.stream_fd_in)
         logging.debug('\t- Stream encoder in')
 
+        if self.polling:
+            self.polling.close()
+            self.polling = None
+
         try:
             os.remove(self.enc_out)
             os.remove(self.stream_path)
@@ -116,7 +123,11 @@ class Encoder:
     def read(self):
         while True:
             try:
-                return os.read(self.enc_fd_out, 1024 * 8)
+                if self.polling: self.polling.poll(1)
+                else: return ''
+
+                if self.enc_fd_out: return os.read(self.enc_fd_out, 1024 * 16)
+                else: return ''
             except os.error as err:
                 if errno.EAGAIN == err.errno:
                     if self.stop_encoding.wait(0): return ''
@@ -124,4 +135,3 @@ class Encoder:
                 else:
                     logging.debug('Failed to read from encoder output: %s' % errno.errorcode[err.errno])
                     raise
-
