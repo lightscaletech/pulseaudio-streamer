@@ -121,17 +121,15 @@ class Encoder:
         logging.debug('Encoding stopped')
 
     def read(self):
-        while True:
-            try:
-                if self.polling: self.polling.poll(1)
-                else: return ''
+        try:
+            if self.polling: self.polling.poll(1)
+            else: return ''
 
-                if self.enc_fd_out: return os.read(self.enc_fd_out, 1024 * 16)
-                else: return ''
-            except os.error as err:
-                if errno.EAGAIN == err.errno:
-                    if self.stop_encoding.wait(0): return ''
-                    continue
-                else:
-                    logging.debug('Failed to read from encoder output: %s' % errno.errorcode[err.errno])
-                    raise
+            if self.enc_fd_out: return os.read(self.enc_fd_out, 1024 * 16)
+            else: return ''
+        except os.error as err:
+            if errno.EAGAIN == err.errno:
+                return ''
+            else:
+                logging.debug('Failed to read from encoder output: %s' % errno.errorcode[err.errno])
+                raise
