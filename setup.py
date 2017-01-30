@@ -10,25 +10,26 @@ setup(
     name='pulseaudio-streamer',
     description='Detects UPnP media renderers to stream audio to',
     long_description=long_description,
-    version='1.0.0',
+    version='1.0.1',
     author='Sam Light',
     author_email='info@lightscale.co.uk',
     url='https://github.com/lightscaletech/pulseaudio-streamer',
     platforms='Linux',
     keywords=['pulseaudio', 'upnp', 'dlna', 'streaming', 'audio'],
-    packages=find_packages(),
+    packages=['pulseaudio_streamer'],
     install_requires=[
         'xmltodict >= 0.10.2'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python',
         'Licence :: OSI Approved :: GPLv3',
         'Environment :: Console',
         'Topic :: Multimedia :: Sound/Audio'],
     entry_points={
         'console_scripts':[
-            'pulseaudio-streamer=pulseaudio_streamer.main']},
+            'pulseaudio-streamer=pulseaudio_streamer.__main__:main']},
     package_data={
-        'pulseaudio_streamer':'upnp/*.xml'
-    })
+        'pulseaudio_streamer':'upnp/*'
+    },
+    include_package_data=True)
