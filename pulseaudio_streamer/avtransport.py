@@ -1,5 +1,5 @@
-import control
-import metadata
+from pulseaudio_streamer import control
+from pulseaudio_streamer import metadata
 
 class AVTransport:
 
@@ -45,4 +45,3 @@ class AVTransport:
         req = self.create_req()
         req.set_action('Stop')
         req.add_attribute('InstanceID', self.instance_id)
-

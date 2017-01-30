@@ -1,16 +1,23 @@
 import socket
-import httplib
-from StringIO import StringIO
+import sys
 import logging
 
-import device
-from avtransport import AVTransport
-from connectionmanager import ConnectionManager
+if sys.version_info >= (3, 0):
+    import http.client as httplib
+    from io import BytesIO as StringIO
+elif sys.version_info < (3, 0):
+    import httplib
+    from StringIO import StringIO
+
+
+from pulseaudio_streamer import device
+from pulseaudio_streamer.avtransport import AVTransport
+from pulseaudio_streamer.connectionmanager import ConnectionManager
 
 class SSDP:
     HOST = ("239.255.255.250", 1900)
     MX = 2
-    message = "\r\n".join(
+    message = '\r\n'.join(
         ['M-SEARCH * HTTP/1.1',
          'HOST: {0}:{1}',
          'MAN: "ssdp:discover"',
@@ -21,12 +28,16 @@ class SSDP:
 
     def __init__(self, service = "upnp:rootdevice"):
       self.service = service
-      self.message = self.message.format(*self.HOST, st=service, mx=self.MX)
+      self.message = self.message.format(*self.HOST,
+                                         st=service,
+                                         mx=self.MX).encode('latin-1')
 
     def receive(self, sock):
-        self.responses.append(SSDP_Response(sock.recv(2048)))
+        res = SSDP_Response(sock.recv(2048))
+        self.responses.append(res)
 
     def scan(self):
+        logging.debug("Searching for devices...")
         self.responses = []
         socket.setdefaulttimeout(3)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM,
@@ -37,7 +48,7 @@ class SSDP:
 
         while True:
             try:self.receive(sock)
-            except: break
+            except socket.timeout as to: break
 
         sock.close()
 
@@ -53,10 +64,13 @@ class SSDP_Response(object):
         self.usn = res.getheader('USN')
         self.st = res.getheader('ST')
 
+    def __str__(self):
+        return ("SSDP_Response: location: %s, usn: %s, st: %s" %
+                (self.location, self.usn, self.st))
+
 s = SSDP()
 
 def find_devices():
-    logging.debug("Searching for devices...")
     s.scan()
     devices = device.get_devices(s.responses)
     devices = device.filter_devices_by_service_type(devices, AVTransport.SERVICE)

@@ -1,4 +1,4 @@
-import control
+from pulseaudio_streamer import control
 
 class ConnectionManager:
 
@@ -21,4 +21,3 @@ class ConnectionManager:
 
     def connection_complete(self):
         req = self.create_req()
-

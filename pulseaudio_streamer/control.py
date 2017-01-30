@@ -1,4 +1,5 @@
 import os
+import errno
 from xml.dom import minidom
 import socket
 import re
@@ -92,20 +93,31 @@ class ControlResponse:
 
 
 def send_request(req, just_send=False):
-    mes = req.get_xml().encode("utf-8")
+    mes = req.get_xml()
     headers = req.headers
-    headers.update({'Content-Length': len(mes)})
+    headers.update({'Content-Length': str(len(mes))})
 
     sock = socket.socket()
-    sock.connect(req.get_host_port())
-    sock.send('POST %s HTTP/1.1\r\n' % req.service_path)
-    for h, v in headers.items(): sock.send('%s: %s\r\n' % (h, v))
-    sock.send('\r\n')
-    sock.send(mes)
 
-    if just_send: return sock.close()
+    try:
+        sock.connect(req.get_host_port())
+        sock.send(b'POST %s HTTP/1.1\r\n' % req.service_path.encode('utf-8'))
+        for h, v in headers.items():
+            sock.send(b'%s: %s\r\n' % (h.encode('utf-8'), v.encode('utf-8')))
 
-    data = []
-    for l in sock.makefile(): data.append(l)
-    sock.close()
-    return ControlResponse(data)
+        sock.send(b'\r\n')
+        sock.send(mes)
+
+        if just_send: return sock.close()
+
+        data = []
+        for l in sock.makefile(): data.append(l)
+
+        sock.close()
+        return ControlResponse(data)
+    except OSError as err:
+        if err.errno == errno.ECONNREFUSED:
+            sock.close()
+            return None
+        elif err.errno == errno.ENOTCONN: return None
+        else: raise

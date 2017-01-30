@@ -1,6 +1,13 @@
-import urllib
+import sys
+import socket
+import errno
 import re
 import xmltodict
+import logging
+if sys.version_info >= (3, 0):
+    from urllib import request
+elif sys.version_info < (3, 0):
+    import urllib as request
 
 class Service(object):
     def __init__(self, data):
@@ -42,15 +49,19 @@ def get_base_url(path):
 
 def get_device(res):
     url = res.location
-    con = urllib.urlopen(url)
-    return Device(get_base_url(url), con.read())
+    try:
+        con = request.urlopen(url)
+        return Device(get_base_url(url), con.read())
+    except OSError as err:
+        logging.debug('Error getting devices')
+        if err.errno == errno.ECONNREFUSED: return None
+        else: raise
 
 def get_devices(resources):
     result = []
     for r in resources:
-        try:
-            result.append(get_device(r))
-        except: None
+        dev = get_device(r)
+        if dev: result.append(dev)
     return result
 
 def filter_devices_by_service_type(devices, type):

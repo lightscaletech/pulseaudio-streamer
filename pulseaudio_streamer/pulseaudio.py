@@ -2,6 +2,7 @@ import subprocess
 import threading
 import logging
 import re
+import os
 
 cmd = "/usr/bin/pactl "
 mods = []
@@ -123,10 +124,7 @@ class SinkWatcher:
 
     def get_state(self):
         com = ['/usr/bin/pactl', 'list', 'sinks', 'short']
-        proc = subprocess.Popen(com,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        out, err = proc.communicate()
+        out = subprocess.check_output(com).decode('utf-8')
         lines = out.splitlines()
         res = {}
         for l in lines:
@@ -139,12 +137,11 @@ class SinkWatcher:
         return NotFound()
 
     def watch(self):
+        sink = {}
         while True:
-            try:
-                sink = self.get_state()
-            except:
-                logging.debug('Error getting state of sink')
+            sink = self.get_state()
             if type(sink) is NotFound:
+                logging.debug('Error getting state of sink')
                 self.exception = sink
                 self.release()
             else:

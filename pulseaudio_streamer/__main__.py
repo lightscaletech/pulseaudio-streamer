@@ -1,15 +1,14 @@
 import logging
-import device
 import time
 import socket
 import errno
 from threading import Event
 
-import ssdp
-from connectionmanager import ConnectionManager
-from avtransport import AVTransport
-import fifowatcher
-import pulseaudio
+from pulseaudio_streamer import ssdp
+from pulseaudio_streamer.connectionmanager import ConnectionManager
+from pulseaudio_streamer.avtransport import AVTransport
+from pulseaudio_streamer import fifowatcher
+from pulseaudio_streamer import pulseaudio
 
 stop_running = Event()
 
@@ -23,7 +22,7 @@ def main(args=None):
     stop_running.clear()
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         datefmt='%I:%M:%S',
-                        level=logging.INFO)
+                        level=logging.DEBUG)
     logging.info("Starting device discovery")
     try:
         while True:
@@ -33,7 +32,6 @@ def main(args=None):
             if stop_running.wait(5): break
     except KeyboardInterrupt: cleanup()
     except socket.error as err:
-        print (err.errno)
         cleanup()
         raise
     except:

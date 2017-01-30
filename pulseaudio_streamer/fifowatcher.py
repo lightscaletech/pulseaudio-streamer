@@ -2,10 +2,10 @@ import threading
 import logging
 import time
 
-import server
-import avtransport
-import encoder
-import pulseaudio
+from pulseaudio_streamer import server
+from pulseaudio_streamer import avtransport
+from pulseaudio_streamer import encoder
+from pulseaudio_streamer import pulseaudio
 
 watchers = []
 
@@ -19,7 +19,7 @@ class Watch:
         self.sinkwatch = pulseaudio.SinkWatcher(self.mod, self.stop_running)
         self.avtran = avtransport.AVTransport(self.mod['dev'])
         self.encoder = encoder.Encoder(self.mod)
-        self.server = server.Server(self.encoder)
+        self.server = server.Server(self.sinkwatch.stopped, self.encoder)
 
         self.thread = threading.Thread(target=self.watch)
         self.thread.start()
@@ -31,8 +31,8 @@ class Watch:
 
     def start_playback(self):
         self.avtran.stop()
-        self.avtran.set_transport_url('http://%s:%i' % (self.server.ip, self.server.port))
         self.server.start()
+        self.avtran.set_transport_url('http://%s:%i' % (self.server.ip, self.server.port))
         self.avtran.play()
 
     def stop_playback(self):
@@ -45,6 +45,7 @@ class Watch:
         try:
             while True:
                 logging.debug('Waiting for playback')
+                self.sinkwatch.started.clear()
                 self.sinkwatch.wait_till_play()
 
                 self.start_playback()
@@ -84,4 +85,3 @@ def setup_watches(stop_running, mods):
         else: found = True
 
     for i in to_delete: del watchers[i]
-

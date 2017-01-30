@@ -123,13 +123,12 @@ class Encoder:
     def read(self):
         try:
             if self.polling: self.polling.poll(1)
-            else: return ''
-
+            else: return None
             if self.enc_fd_out: return os.read(self.enc_fd_out, 1024 * 16)
-            else: return ''
+            else: return None
         except os.error as err:
             if errno.EAGAIN == err.errno:
-                return ''
+                return None
             else:
                 logging.debug('Failed to read from encoder output: %s' % errno.errorcode[err.errno])
                 raise
