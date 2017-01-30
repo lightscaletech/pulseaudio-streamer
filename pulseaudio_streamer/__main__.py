@@ -19,11 +19,11 @@ def cleanup():
     #fifowatcher.cleanup()
     stop_running.set()
 
-def main():
+def main(args=None):
     stop_running.clear()
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         datefmt='%I:%M:%S',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     logging.info("Starting device discovery")
     try:
         while True:
