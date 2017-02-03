@@ -39,5 +39,9 @@ Clone the repo and run the below in your shell:
 If your lucky devices will show in pavucontrol and you will get a
 dropdown against each application to select which device you stream to.
 
+ 
+
+Copyright (c) 2017 Lightscale Tech Ltd
+
 .. _pulseaudio-dlna: https://github.com/masmu/pulseaudio-dlna
 .. _gmediarender-reserect: https://github.com/hzeller/gmrender-resurrect
