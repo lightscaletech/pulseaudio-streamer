@@ -9,8 +9,6 @@ if sys.version_info >= (3, 0):
 elif sys.version_info < (3, 0):
     import urllib as request
 
-import urllib
-
 class Service(object):
     def __init__(self, data):
         self.service_type = data['serviceType']

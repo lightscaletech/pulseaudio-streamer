@@ -2,3 +2,4 @@
 build
 dist
 pulseaudio_streamer.egg-info/
+log/*
