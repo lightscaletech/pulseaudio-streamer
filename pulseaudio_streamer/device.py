@@ -9,6 +9,8 @@ if sys.version_info >= (3, 0):
 elif sys.version_info < (3, 0):
     import urllib as request
 
+import urllib
+
 class Service(object):
     def __init__(self, data):
         self.service_type = data['serviceType']
@@ -52,10 +54,8 @@ def get_device(res):
     try:
         con = request.urlopen(url)
         return Device(get_base_url(url), con.read())
-    except OSError as err:
-        logging.debug('Error getting devices')
-        if err.errno == errno.ECONNREFUSED: return None
-        else: raise
+
+    except OSError as err: pass
 
 def get_devices(resources):
     result = []
