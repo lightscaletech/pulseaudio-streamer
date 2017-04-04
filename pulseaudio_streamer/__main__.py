@@ -3,6 +3,7 @@ import time
 import socket
 import errno
 from threading import Event
+import argparse
 
 from pulseaudio_streamer import ssdp
 from pulseaudio_streamer.connectionmanager import ConnectionManager
@@ -18,11 +19,24 @@ def cleanup():
     #fifowatcher.cleanup()
     stop_running.set()
 
+def parseArgs():
+    parser = argparse.ArgumentParser(
+        description="Steam audio from pulseaudio to upnp devices")
+
+    parser.add_argument('-v', '--verbose', help='Increase output verbosity',
+                        action="store_true")
+    return parser.parse_args()
+
 def main(args=None):
+    args = parseArgs()
+
+    loglev = logging.INFO
+    if args.verbose: loglev = logging.DEBUG
+
     stop_running.clear()
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
                         datefmt='%I:%M:%S',
-                        level=logging.DEBUG)
+                        level=loglev)
     logging.info("Starting device discovery")
     try:
         while True:
