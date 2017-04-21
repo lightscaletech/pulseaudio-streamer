@@ -1,6 +1,7 @@
 import socket
 import sys
 import logging
+import errno
 
 if sys.version_info >= (3, 0):
     import http.client as httplib
@@ -44,7 +45,12 @@ class SSDP:
                              socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-        sock.sendto(self.message, self.HOST)
+        try:
+            sock.sendto(self.message, self.HOST)
+        except OSError as err:
+            sock.close()
+            if err.errno == errno.ENETUNREACH: return
+            raise
 
         while True:
             try:self.receive(sock)
