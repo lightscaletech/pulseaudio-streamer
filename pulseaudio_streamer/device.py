@@ -44,16 +44,23 @@ class Device(object):
         else: return True
 
 def get_base_url(path):
-    m = re.match('https?\:\/\/([a-zA-Z0-9.:]+)\/', path)
-    return m.group(1)
+    try:
+        m = re.match('https?\:\/\/([a-zA-Z0-9.:]+)\/', path)
+        return m.group(1)
+    except:
+        return None
 
 def get_device(res):
     url = res.location
+    baseurl = get_base_url(url)
+
+    if not baseurl: return None
+
     try:
         con = request.urlopen(url)
-        return Device(get_base_url(url), con.read())
-
+        return Device(baseurl, con.read())
     except OSError as err: pass
+
 
 def get_devices(resources):
     result = []
