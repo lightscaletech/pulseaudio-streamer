@@ -30,7 +30,6 @@ def getFistLanIp():
         try:
             ip = getInterfaceIp(i.encode())
         except OSError: continue
-        print (ip)
         if isLocal(ip): continue
         ips.append(ip)
 
