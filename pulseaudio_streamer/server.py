@@ -3,6 +3,8 @@ import socket
 import threading
 import errno
 
+from pulseaudio_streamer import network
+
 port_inc = 0
 
 class Server:
@@ -11,7 +13,7 @@ class Server:
 
     def __init__(self, stop_event,  encoder):
         self.encoder = encoder
-        self.ip = socket.gethostbyname(socket.getfqdn())
+        self.ip = network.getFistLanIp()
         self.stop_streaming = threading.Event()
         self.thread = None
         self.stop_event = stop_event
