@@ -34,7 +34,7 @@ Clone the repo and run the below in your shell:
 
 .. code:: shell
 
-    python2 ./main.py
+    python ./main.py
 
 If your lucky devices will show in pavucontrol and you will get a
 dropdown against each application to select which device you stream to.
