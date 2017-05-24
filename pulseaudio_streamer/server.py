@@ -75,7 +75,9 @@ class Server:
                     if out: conn.send(out)
                     header = None
             except OSError as err:
-                if err.errno == errno.ECONNRESET:
+                if (err.errno == errno.ECONNRESET or
+                    err.errno == errno.EPIPE or
+                    err.errno == errno.ESHUTDOWN):
                     self.stop_event.set()
                 else: raise
 
