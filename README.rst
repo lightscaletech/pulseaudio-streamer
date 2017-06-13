@@ -39,7 +39,19 @@ Clone the repo and run the below in your shell:
 
 If your lucky devices will show in pavucontrol and you will get a
 dropdown against each application to select which device you stream to.
+ 
+Install
+-----
 
+Clone the repo and cd into it. Then run the following:
+
+.. code:: shell
+
+    python setup.py install
+    
+You will require root access to install this so use :code:`sudo` if you are not logged in as root.
+
+Once the application is installed you will be able to run it from the shell by using :code:`pulseaudio-streamer`.
  
 
 Copyright (c) 2017 Lightscale Tech Ltd
