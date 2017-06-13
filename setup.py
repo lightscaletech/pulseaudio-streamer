@@ -29,7 +29,5 @@ setup(
     entry_points={
         'console_scripts':[
             'pulseaudio-streamer=pulseaudio_streamer.__main__:main']},
-    package_data={
-        'pulseaudio_streamer':'upnp/*'
-    },
-    include_package_data=True)
+    package_data={'pulseaudio_streamer': ['upnp/*.xml']}
+)
