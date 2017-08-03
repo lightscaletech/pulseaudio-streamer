@@ -4,6 +4,7 @@ import errno
 import re
 import xmltodict
 import logging
+
 if sys.version_info >= (3, 0):
     from urllib import request
 elif sys.version_info < (3, 0):
@@ -23,10 +24,13 @@ class Device(object):
         device = doc['root']['device']
         service = device['serviceList']['service']
 
-        self.friendly_name = device['friendlyName']
-        self.manufacturer = device['manufacturer']
-        self.model_name = device['modelName']
-        self.model_description = device['modelDescription']
+        try:
+            self.friendly_name = device['friendlyName']
+            self.manufacturer = device['manufacturer']
+            self.model_name = device['modelName']
+            self.model_description = device['modelDescription']
+        except: pass
+
         self.url_base = url
         self.services = []
 
