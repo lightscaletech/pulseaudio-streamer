@@ -2,6 +2,7 @@ import logging
 import time
 import socket
 import errno
+import signal
 from threading import Event
 import argparse
 
@@ -19,6 +20,8 @@ def cleanup():
     #fifowatcher.cleanup()
     stop_running.set()
 
+def sighandle(signum, frame): cleanup()
+
 def parseArgs():
     parser = argparse.ArgumentParser(
         description="Steam audio from pulseaudio to upnp devices")
@@ -32,6 +35,9 @@ def main(args=None):
 
     loglev = logging.INFO
     if args.verbose: loglev = logging.DEBUG
+
+    signal.signal(signal.SIGHUP, sighandle);
+    signal.signal(signal.SIGTERM, sighandle);
 
     stop_running.clear()
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s',
