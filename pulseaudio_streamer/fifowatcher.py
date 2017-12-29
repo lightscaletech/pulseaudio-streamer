@@ -84,4 +84,6 @@ def setup_watches(stop_running, mods):
         if not found: to_delete.append(index)
         else: found = True
 
-    for i in to_delete: del watchers[i]
+    try:
+        for i in to_delete: del watchers[i]
+    except: pass
